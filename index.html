@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraTrack - 音乐播放器视觉壁纸生成器</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Zen+Maru+Gothic:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- 主画布视口 -->
+    <main class="preview-stage">
+      <div class="stage-nav">
+        <div class="brand-pill">
+          <span class="project-title">AuraTrack</span>
+          <span class="studio-sub">by DellseySlavier Studio</span>
+        </div>
+        <div class="preset-indicator" id="presetIndicator">iPhone 壁纸 (1320 × 2868)</div>
+      </div>
+
+      <!-- 画布容器 (与导出的 Canvas 1:1 像素级严丝合缝) -->
+      <div class="canvas-viewport" id="viewport">
+        <canvas id="mainCanvas" width="1320" height="2868" title="点击上传或更换封面"></canvas>
+      </div>
+
+      <div class="stage-actions">
+        <button class="export-btn" id="btnDownload">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>导出超清壁纸 (PNG)</span>
+        </button>
+      </div>
+    </main>
+
+    <!-- 右侧控制侧边栏 -->
+    <aside class="control-sidebar">
+      <div class="sidebar-header">
+        <div class="header-titles">
+          <h2>设计面板</h2>
+          <span class="studio-credit">DellseySlavier Studio</span>
+        </div>
+        <span class="version-tag">v2.0 像素高保真</span>
+      </div>
+
+      <!-- 尺寸预设 -->
+      <div class="control-group">
+        <label class="group-title">SIZE / 壁纸与画布尺寸</label>
+        <div class="preset-grid">
+          <button class="preset-card active" data-w="1320" data-h="2868" data-name="iPhone 壁纸 (1320 × 2868)">
+            <span class="p-name">iPhone 壁纸</span>
+            <span class="p-res">1320 × 2868 (9:16)</span>
+          </button>
+          <button class="preset-card" data-w="1080" data-h="2400" data-name="Android FHD+ (1080 × 2400)">
+            <span class="p-name">Android FHD+</span>
+            <span class="p-res">1080 × 2400 (20:9)</span>
+          </button>
+          <button class="preset-card" data-w="1440" data-h="3200" data-name="Android WQHD+ (1440 × 3200)">
+            <span class="p-name">Android 2K/WQHD+</span>
+            <span class="p-res">1440 × 3200</span>
+          </button>
+          <button class="preset-card" data-w="1080" data-h="1920" data-name="标准 9:16 (1080 × 1920)">
+            <span class="p-name">标准 9:16</span>
+            <span class="p-res">1080 × 1920</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 封面图片选择 -->
+      <div class="control-group">
+        <label class="group-title">IMAGE / 专辑与封面</label>
+        <div class="upload-dropzone" id="dropZone">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div class="drop-text">
+            <span>点击或拖入照片</span>
+            <small>自动提取五色调色盘并匹配氛围</small>
+          </div>
+          <input type="file" id="fileInput" accept="image/*" style="display:none">
+        </div>
+        <div class="image-adjust-row">
+          <label>封面圆角</label>
+          <input type="range" id="cornerRange" min="0" max="64" value="28">
+        </div>
+      </div>
+
+      <!-- 视觉艺术风格 -->
+      <div class="control-group">
+        <label class="group-title">STYLE / 视觉光影风格</label>
+        <div class="segmented-control" id="themePicker">
+          <button class="seg-btn active" data-theme="glass">极光毛玻璃</button>
+          <button class="seg-btn" data-theme="clean">原版清雅</button>
+          <button class="seg-btn" data-theme="retro">复古黑胶</button>
+        </div>
+      </div>
+
+      <!-- 歌曲信息 -->
+      <div class="control-group">
+        <label class="group-title">INFO / 歌曲与文本</label>
+        <div class="input-field">
+          <span class="input-label">曲目标题</span>
+          <input type="text" id="inputTitle" value="青色がすき。" placeholder="歌曲名...">
+        </div>
+        <div class="input-field">
+          <span class="input-label">艺术家 / 描述</span>
+          <input type="text" id="inputArtist" value="keiju · Midnight Radio" placeholder="歌手 / 专辑...">
+        </div>
+        <div class="input-field">
+          <span class="input-label">署名水印</span>
+          <input type="text" id="inputAccount" value="@DellseySlavier Studio" placeholder="底部署名...">
+        </div>
+      </div>
+
+      <!-- 配色方案 -->
+      <div class="control-group">
+        <div class="title-with-extra">
+          <label class="group-title">COLOR / 色彩与调色板</label>
+          <span class="subtext">点击选为主底色</span>
+        </div>
+        <div class="palette-swatches" id="swatchList"></div>
+        <div class="color-picker-item">
+          <span>自定义背景颜色</span>
+          <input type="color" id="customColorPicker" value="#2C363D">
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script src="color.js"></script>
+  <script src="canvasEngine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
